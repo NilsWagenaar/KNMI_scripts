@@ -1,0 +1,127 @@
+#!/usr/bin/ksh
+
+#
+# Preliminary, also needed by genCRH
+#
+
+
+#if [ ${MYSQL_USER:-nobody} == nobody ]; then
+  #echo "$0 –– Set MySQL access first"
+  #exit 11
+#else
+  #alias Mysql="mysql --defaults"
+#fi
+alias Mysql="mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf"
+
+while [ $# -gt 0 ]; do
+# echo "$1" >&2
+  eval "$1"
+  shift
+done
+
+#: ${db:=Kansen-${dbx:=EPS0x}}
+: ${db:=waqua_work}
+: ${corr:=yes}
+: ${outopt:="-s -B"}
+
+#
+# Function to do the work
+#
+genCRH ()
+{
+# set -ux
+(
+  if [ ${6:-yes} == "no" ]; then
+    rank=rank
+    crh=crh$1
+  else
+    rank=rank1
+    crh=crhcal$1_0912
+  fi
+  echo "DROP TABLE IF EXISTS hist;"
+  echo "CREATE TABLE hist"
+  echo "SELECT $rank AS rank, COUNT(*) AS N FROM eps$1_0912"
+  echo "WHERE $rank IS NOT NULL"
+  echo "AND tf   >  $2"
+  echo "AND tf   <= $3"
+  if [ $4 -gt 0 ]; then
+    tide='high'
+    echo "AND hastr >=    0"
+  else
+    tide='low'
+    echo "    AND hastr <     0"
+  fi
+  if [ $5 -gt 0 ]; then
+    surge='pos'
+    echo "    AND hobs >=     0"
+    echo "    AND hobs <=  1000"
+  else
+    surge='neg'
+    echo "    AND hobs >= -1000"
+    echo "    AND hobs <      0"
+  fi
+  echo "  GROUP BY $rank;"
+# I am not sure whether this is the most elegant way, but I need to be sure that every rank is
+# present.
+  echo "ALTER TABLE hist ADD UNIQUE (rank);"
+  echo "INSERT IGNORE INTO hist VALUES"
+  ((i = 0))
+  while [ $((++i)) -le 53 ]; do
+    if [ $i -lt 53 ]; then
+      echo " ($i, 0),"
+    else
+      echo " ($i, 0);"
+    fi
+  done
+  echo "CREATE TABLE IF NOT EXISTS $crh"
+  echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT   0,"
+  echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
+  echo "    astro ENUM ('high', 'low'),"
+  echo "    rank  TINYINT(4)   NOT NULL DEFAULT -1,"
+  echo "    surge ENUM ('pos', 'neg'),"
+  echo "    rh    DOUBLE(19,2) NOT NULL DEFAULT -1.0,"
+  echo "    crh   DOUBLE(19,2) NOT NULL DEFAULT -1.0,"
+  echo "    mtime TIMESTAMP NOT NULL,"
+  echo "    PRIMARY KEY (tfmin, tfmax, astro, surge, rank));"
+  echo "SELECT COUNT(*), @norm := SUM(N) FROM hist;"
+  echo "INSERT INTO $crh (tfmin, tfmax, astro, surge, rank, rh, crh)"
+  echo "  SELECT $2, $3, \"$tide\", \"$surge\", t1.rank,"
+  echo "      ROUND(100.0 * t1.N / @norm, 2),"
+  echo "      ROUND(100.0 * SUM(t2.N) / @norm, 2)"
+  echo "    FROM hist AS t1 LEFT JOIN hist AS t2 ON t2.rank <= t1.rank"
+  echo "    GROUP BY t1.rank;"
+  echo "DROP TABLE IF EXISTS hist;"
+) \
+  | Mysql $outopt $db \
+  > /dev/null \
+  || exit $?
+}
+
+
+#
+# Main body
+#
+
+# Forecast time intervals. Must be large enough to ensure that every rank is filled. It appeared
+# that 36 hours was not.
+set -A tfs 0:48 48:84 84:120 120:156 156:192 192:240
+
+set -x 
+for gauge in $(echo "SHOW TABLES" | Mysql $outopt $db | grep eps \
+                | sed -e 's/^eps//' -e 's/_.*//' | sort | uniq); do
+# for corr in "no" "yes"; do
+    if [ $corr == "no" ]; then
+      echo "DROP TABLE IF EXISTS crh$gauge" | Mysql $outopt $db
+    else
+      echo "DROP TABLE IF EXISTS crhcal$gauge" | Mysql $outopt $db
+    fi
+    for tf in ${tfs[*]}; do
+      for astro in -1 1; do
+	for surge in -1 1; do
+	  genCRH $gauge $(echo $tf | sed -e 's/:/ /') $astro $surge $corr || exit $?
+	done
+      done
+    done
+ done
+#done
+ echo "done"

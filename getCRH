@@ -1,0 +1,83 @@
+#!/bin/bash
+
+#if [ ${MYSQL_USER:-nobody} == nobody ]; then
+  #echo "$0 –– Set MySQL access first"
+  #exit 11
+#else
+  #alias Mysql="mysql -h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASSWD"
+#fi
+
+while [ $# -gt 0 ]; do
+# echo "$1" >&2
+  eval "$1"
+  shift
+done
+
+: ${db:=Kansen-${dbx:=EPS0}}
+: ${work:=${db}}
+: ${gauge:=06514}
+: ${rank:=rank}
+: ${tfmin:=48}
+: ${tfmax:=120}
+: ${obsmn:=-1000}
+: ${obsmx:=1000}
+: ${astro:=0}
+: ${obs:=hobs}
+: ${epsbs:=eps}
+: ${start:=""}
+: ${last:=$(backupdate now 0)}
+: ${outopt:="-s -B"}
+
+gauge=$(statid -one code $gauge)
+
+if [ X${start} != X ]; then
+  ((yy = $start / 1000000))
+  ((ye = $last  / 1000000))
+else
+  ((yy = 0))
+  ((ye = 0))
+fi
+
+(
+  echo "DROP TABLE IF EXISTS $work.hist, $work.hist2;"
+  echo "CREATE TEMPORARY TABLE $work.hist ("
+  echo "  ${rank} tinyint(4) default NULL,"
+  echo "  N bigint(21) NOT NULL default 0 );"
+  while [ $yy -le $ye ]; do
+    echo   "INSERT INTO $work.hist"
+    if [ X$start == X ]; then
+      echo "  SELECT ${rank}, COUNT(*) AS N FROM ${epsbs}${gauge}"
+      ((yy++))
+    else
+      echo "  SELECT ${rank}, COUNT(*) AS N FROM ${epsbs}${gauge}_$((yy++))"
+    fi
+    echo   "  WHERE ${rank} IS NOT NULL"
+    echo   "    AND N     = 52"
+    echo   "    AND tf   >= ${tfmin}"
+    echo   "    AND tf   <= ${tfmax}"
+    if [ $obs == hobs ]; then
+      echo "    AND hobs >= ${obsmn}"
+      echo "    AND hobs <= ${obsmx}"
+    else
+      echo "    AND hmean >= ${obsmn}"
+      echo "    AND hmean <= ${obsmx}"
+    fi
+    if [ $astro -gt 0 ]; then
+      echo "    AND hastr >= 0"
+    else
+      echo "    AND hastr <= 0"
+    fi
+    if [ X$start != X ]; then
+      echo "    AND tastr >= ${start}0000"
+      echo "    AND tastr <= ${last}0000"
+    fi
+    echo   "  GROUP BY ${rank};"
+  done
+  echo "CREATE TABLE $work.hist2"
+  echo "  SELECT ${rank}, SUM(N) AS N FROM $work.hist GROUP BY ${rank};"
+  echo "SELECT COUNT(*), @norm := SUM(N) FROM $work.hist2;"
+  echo "SELECT t1.${rank}, ROUND(100.0 * t1.N / @norm, 2) AS RH, ROUND(100.0 * SUM(t2.N) / @norm, 2) AS CRH"
+  echo "  FROM $work.hist2 AS t1 LEFT JOIN $work.hist2 AS t2 ON t2.${rank} <= t1.${rank}"
+  echo "  GROUP BY t1.${rank};"
+) \
+  | mysql --defaults-file=$HOME/.mysql/ontwrd.cnf $outopt $db

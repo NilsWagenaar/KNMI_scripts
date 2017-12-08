@@ -1,0 +1,107 @@
+#!/bin/bash
+
+function surgelvls
+{
+cont=""
+for lvl in $(
+  case $1 in
+    06511 )       # Delfzijl
+      echo -150 -100 -50 80 120 150 200 250;;
+    06512 )       # Den Helder
+      echo -120 -100 -80 -50 80 120 150 180;;
+    06513 )       # Harlingen
+      echo -150 -100 -50 80 120 150 200 250;;
+    06514 )       # Hoek van Holland
+      echo -100 -75 -50 50 75 100 125 150;;
+    06515 )       # Huibertgat
+      echo -100 -75 -50 50 75 100 125 150;;
+    06516 )       # Roompot Buiten
+      echo -100 -75 -50 50 75 100 125 150;;
+    06520 )       # Vlissingen
+      echo -100 -75 -50 50 75 100 125 150;;
+    06522 )       # IJmuiden
+      echo -100 -75 -50 50 75 100 125 150;;
+    *     )       # Alle andere
+      echo -100 -75 -50 50 75 100 125 150;;
+  esac); do
+  printf "%s(%d, 'surge')" "$cont" $lvl
+  cont=","
+done
+printf "\n"
+}
+
+#if [ ${MYSQL_USER:-nobody} == nobody ]; then
+  #echo "$0 –– Set MySQL access first"
+  #exit 11
+#else
+  #alias Mysql="mysql -h $MYSQL_HOST -u $MYSQL_USER -p$MYSQL_PASSWD"
+#fi
+
+while [ $# -gt 0 ]; do
+  eval "$1"
+  shift
+done
+
+: ${db:=waqua}
+: ${work:=waqua_work}
+: ${astro:=astro}
+: ${gauge:=06511}
+: ${corr:=yes}
+: ${yyldho:=2015}
+: ${last:=$(date +%Y%m%d00)}
+: ${start:=$(backupdate $last -144)}
+: ${outopt:="-Ns"}
+: ${temp=TEMPORARY}
+
+
+gauge=$(statid -one code $gauge)
+
+(
+echo "DROP TABLE IF EXISTS ${work}.lvls;"
+echo "CREATE TEMPORARY TABLE ${work}.lvls"
+echo " (lvl smallint(6) NOT NULL,"
+echo "  lvltype enum ('surge', 'level') NOT NULL);"
+for lvl in ip vp wp ap lndap; do
+  echo "INSERT INTO ${work}.lvls"
+  echo "  SELECT ${lvl}, 'level' FROM ${astro}.svsdpeil WHERE code=$gauge AND version=${yyldho};"
+done
+echo "INSERT INTO ${work}.lvls VALUES $(surgelvls $gauge);"
+# echo "DESCRIBE ${work}.lvls;"
+# echo "SELECT *, lvltype-1 FROM ${work}.lvls;"
+
+
+dtg=$start
+while [ $(dtgdistance $dtg $last) -gt 0 ]; do
+  yy=${dtg:0:4}
+  echo "DROP TABLE IF EXISTS ${work}.epsLev${gauge}_${yy};"
+  echo "CREATE ${temp} TABLE ${work}.epsLev${gauge}_${yy}"
+  echo "  SELECT tastr, hastr, hobs, dtg, tf, hmean, sigma, round(a0 + a1*sigma, 2) AS bias, l.*"
+# echo "      , astro, surge, a0, a1"
+  echo "    FROM ${work}.eps${gauge}_${yy} AS e JOIN ${work}.corr_${yy} AS c"
+  echo "        ON (N=52 AND code=${gauge} AND astro=sign(hastr) AND surge=sign(hmean)"
+  echo "          AND tf > tfmin AND tf <= tfmax)"
+  echo "      JOIN ${work}.lvls AS l;"
+  echo "DROP TABLE IF EXISTS ${work}.nxLev${gauge}_${yy};"
+  echo "CREATE ${temp} TABLE ${work}.nxLev${gauge}_${yy}"
+  echo "  SELECT e.*, COUNT(NULLIF(hmod - bias + (lvltype-1)*hastr < lvl, 1)) AS Nx"
+  echo "    FROM ${work}.epsLev${gauge}_${yy} AS e"
+  echo "      JOIN ${work}.frc${gauge}_${yy} AS f"
+  echo "        USING (dtg, tastr)"
+  echo "    GROUP BY lvl, dtg, tastr;"
+  echo "DROP TABLE IF EXISTS ${work}.excLev${gauge}_${yy}_cal0912;"
+  echo "CREATE TABLE ${work}.excLev${gauge}_${yy}_cal0912_cor1317"
+  echo "  SELECT n.*, IF (lvl < 0, IF (Nx=0, 100.0, 100.0-crh), IF (Nx=0, 0.0, crh)) AS Pexc"
+# echo "  SELECT n.*,  IF (Nx=0, 0.0, crh) AS Pexc"
+  echo "    FROM ${work}.nxLev${gauge}_${yy} AS n"
+  echo "      LEFT JOIN ${work}.crhcal${gauge}_0912 AS c"
+  echo "        ON (tf > tfmin AND tf <= tfmax AND sign(hastr)=3-2*astro AND sign(hmean)=3-2*surge AND c.rank=Nx);"
+  if [ $(dtgdistance ${yy}123123 $last) -gt 0 ]; then
+    dtg=$(backupdate ${yy}123123 1)
+  else
+    dtg=$(backupdate $last 1)
+  fi
+done
+) \
+  | mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf ${outopt} $db
+
+
