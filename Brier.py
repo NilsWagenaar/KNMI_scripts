@@ -8,7 +8,7 @@ import fnmatch
 input_files = {}
 output_files = {}
 #input_files['main_folder'] = "/usr/people/wagenaa/test/13-16/"
-input_files['main_folder'] = "/usr/people/wagenaa/calibration_ENS_1314_new/"
+input_files['main_folder'] = "/usr/people/wagenaa/Cal_ENS_0912_cor1317/"
 output_files['output_txt_file'] = input_files['main_folder'] + "brier_skill.txt"
 station_folders  = glob.glob(input_files['main_folder'] + "/*/")
 

@@ -18,7 +18,8 @@ loc=$(statid -one code ${loc:-06514})
 
 ( for ((yy = 2008; $yy < 2018; yy++)); do
     printf "SELECT %4d, tfmin, tfmax, astro, surge, round(avg((hmean - hobs) / sigma), 2),\n" $yy
-    printf "       round(stddev_pop((hmean - hobs) / sigma), 2)\n"
+    printf "       round(avg(max(hmean - hobs)), 2)" 
+#- ((max(avg(sigma)))*(avg(hmean-hobs)/sigma)), 2)\n"
     printf "  FROM eps%5s_%04d\n" $loc $yy
     printf "      JOIN corr\n"
     printf "        ON (code = %s\n" $loc
