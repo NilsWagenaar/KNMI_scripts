@@ -1,0 +1,68 @@
+#!/bin/bash
+declare -x MYSQL_HOST="bvlmysqldev.knmi.nl"
+declare -x MYSQL_PASSWD="waqwork"
+declare -x MYSQL_USER="waqwrk"
+
+Mysql()
+{
+mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf "$@"
+}
+
+#----------------------------------------------------------------------------------------------
+# Get years or gauge codes from available frc tables
+#----------------------------------------------------------------------------------------------
+yyyy()
+{
+echo "SHOW TABLES LIKE 'eps%'" \
+  | Mysql -sN $1 \
+  | awk -F_ '{ print $2 }' \
+  | sort \
+  | uniq \
+  || exit $?
+}
+
+#==============================================================================================
+# Main body
+#----------------------------------------------------------------------------------------------
+while [ $# -gt 0 -a "X${1#*=}" != "X$1" ]; do
+  eval "$1"
+  shift
+done
+
+# Extra options to be passed to rankeps
+#
+# For corrected ranks use extra=-corrected
+: ${extra:=''}
+
+[ ${DEBUG:-no} == no ] || set -ux
+
+(
+echo "DROP TABLE IF EXISTS corr;"
+echo "CREATE TABLE corr"
+echo "SELECT * from corr_2012;")\
+|Mysql -sN $db
+
+#for db; do
+  #for gg in $(echo "SHOW TABLES LIKE 'eps%'" \
+                #| Mysql -sN $db \
+		#| awk '{ printf "statid mnemo %d\n", substr($1, 4, 5) }' \
+		#| bash | sort | uniq); do
+    #yyy=($(yyyy $db))
+    #if [ "${yyy[*]:-NoYears}" == NoYears ]; then
+      #statid -one name $gg
+      #time rankeps -dbname $db -oldtname $extra $gg || exit $?
+    #else
+      #for yy in ${yyy[*]}; do
+	#echo $yy $(statid -one name $gg)
+	#time rankeps -dbname $db -year $yy $extra $gg || exit $?
+      
+       #done
+    
+    #fi
+
+yy=2012
+gg=hoek
+time rankeps -dbname $db -year $yy $extra $gg || exit $?  
+
+  #done
+#done

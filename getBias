@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/ksh
 
 while [ X${1#*=} != X${1} ]; do
   eval $1
@@ -6,8 +6,8 @@ while [ X${1#*=} != X${1} ]; do
 done
 
 : ${myCnf:=ontwrd.cnf}
-: ${db:=waqua}
-loc=$(statid -one code ${loc:-06514})
+: ${loc:=06514}
+: ${db:=waqua_work}
 
 #alias Mysql='mysql --defaults-file=$HOME/.mysql/$myCnf'
 
@@ -15,21 +15,214 @@ loc=$(statid -one code ${loc:-06514})
 # Mysql -Nse "SHOW TABLES"
 # Mysql -e "DESCRIBE eps06514_2017" $db
 
+#loc=$(statid -one code $loc)
+set -A stations 06511 06512 06514 06515 06520
 
-( for ((yy = 2008; $yy < 2018; yy++)); do
-    printf "SELECT %4d, tfmin, tfmax, astro, surge, round(avg((hmean - hobs) / sigma), 2),\n" $yy
-    printf "       round(avg(max(hmean - hobs)), 2)" 
-#- ((max(avg(sigma)))*(avg(hmean-hobs)/sigma)), 2)\n"
-    printf "  FROM eps%5s_%04d\n" $loc $yy
-    printf "      JOIN corr\n"
-    printf "        ON (code = %s\n" $loc
-    printf "       AND tf > tfmin AND tf <= tfmax\n"
-    printf "       AND astro = SIGN(hastr)\n"
-    printf "       AND surge = SIGN(hmean))\n"
-    printf "    WHERE (month(tastr) < 4 OR month(tastr) > 8)\n"
-    printf "      AND sigma > 0\n"
-    printf "      AND hobs IS NOT NULL\n"
-    printf "    GROUP BY tfmin, astro, surge;\n"
+#for station in "${stations[@]}"; do
+ 
+( for ((yy = 2012; $yy < 2017; yy++)); do
+
+#( for ((yy = 2012; $yy < 2017; yy++)); do
+    echo "DROP TABLE IF EXISTS waqua_work.corr_"${yy}"_temp_06511;"
+    echo "CREATE TABLE waqua_work.corr_"${yy}"_temp_06511"
+    echo "(   code SMALLINT(5) ZEROFILL NOT NULL DEFAULT 00000,"
+    echo "    astro SMALLINT(2),"   
+    echo "    surge SMALLINT(2),"
+    echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT 0,"
+    echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
+    echo "    a0 FLOAT NOT NULL DEFAULT 0,"
+    #echo "    a1 FLOAT NOT NULL DEFAULT 0,"
+    echo "    a1 FLOAT NOT NULL DEFAULT 0,"
+    echo "    mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);"
+    
+    #for station in "${stations[@]}"; do
+      
+    #echo "update waqua_work.corr_"${yy}"_temp_06511" 
+    #echo "set code = ${station};" 
+    echo "INSERT INTO waqua_work.corr_"${yy}"_temp_06511  (astro, surge, tfmin, tfmax, a0, a1)"
+    #printf "SELECT %4d, tfmin, tfmax, astro, surge, round(avg((hmean - hobs) / sigma), 2),\n" $yy
+    echo "SELECT astro, surge, tfmin, tfmax," 
+    echo "((sum(sigma) * sum(sigma * (hmean-hobs))) - (sum(hmean-hobs) * sum(power(sigma, 2))))/ (power(sum(sigma), 2) - (count(1) * sum(power(sigma, 2)))) AS a0," 
+    #echo "((sum(sigma) * sum(hmean-hobs)) - (count(1) * sum(sigma *(hmean-hobs)))) / (power(sum(sigma), 2) - count(1) * sum(power(sigma, 2))) AS a1"  
+    #echo "round(avg((hmean - hobs) / sigma) as a1"
+
+    #echo "round(avg((hmean - hobs) / sigma), 2) AS a1"
+    #echo "((sum(sigma) * sum(hmean-hobs)) - (count(1) * sum(sigma * (hmean-hobs)))) / (power(sum(sigma), 2) - count(1) * sum(power(sigma, 2))) AS a1"
+    #echo "round(stddev_pop((hmean - hobs) / sigma), 2) as a1"
+    echo " round(avg((hmean - hobs) / sigma), 3) as Bias"
+    echo  "FROM eps06511_"${yy}""
+    echo "      JOIN corr"
+    echo   "        ON (code = 06511"    
+    echo  "       AND tf > tfmin AND tf <= tfmax"    
+    echo " AND astro = SIGN(hastr)"    
+    echo "       AND surge = SIGN(hmean))"    
+    echo " WHERE (month(tastr) < 4 OR month(tastr) > 8)"    
+    echo " AND sigma > 0"
+    echo "GROUP BY tfmin, astro, surge;"
+    echo "update waqua_work.corr_"${yy}"_temp_06511" 
+    echo "set code = '06511';"   
+    echo "update waqua_work.corr_"${yy}"_temp_06511" 
+    echo "set a0 = 0;"
+    
+    #for station in "${stations[@]}"; do
+    echo "DROP TABLE IF EXISTS waqua_work.corr_"${yy}"_temp_06512;"    
+    echo "CREATE TABLE waqua_work.corr_"${yy}"_temp_06512"
+    echo "(   code SMALLINT(5) ZEROFILL NOT NULL DEFAULT 00000,"
+    echo "    astro SMALLINT(2),"  
+    echo "    surge SMALLINT(2),"
+    echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT 0,"
+    echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
+    echo "    a0 FLOAT NOT NULL DEFAULT 0,"
+    #echo "    a1 FLOAT NOT NULL DEFAULT 0,"
+    echo " a1 FLOAT NOT NULL DEFAULT 0,"
+    echo "    mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);"  
+    echo "INSERT INTO waqua_work.corr_"${yy}"_temp_06512  (astro, surge, tfmin, tfmax, a0, a1)"
+    #printf "SELECT %4d, tfmin, tfmax, astro, surge, round(avg((hmean - hobs) / sigma), 2),\n" $yy
+    echo "SELECT astro, surge, tfmin, tfmax,"
+    echo "((sum(sigma) * sum(sigma * (hmean-hobs))) - (sum(hmean-hobs) * sum(power(sigma, 2))))/ (power(sum(sigma), 2) - (count(1) * sum(power(sigma, 2)))) AS a0," 
+    #echo "((sum(sigma) * sum(hmean-hobs)) - (count(1) * sum(sigma *(hmean-hobs)))) / (power(sum(sigma), 2) - count(1) * sum(power(sigma, 2))) AS a1"
+    #echo "round(stddev_pop((hmean - hobs) / sigma), 2) as a1"
+    echo "round(avg((hmean - hobs) / sigma), 3) as a1"
+    echo  "FROM eps06512_"${yy}""
+    echo "       JOIN corr"
+    echo   "        ON (code = 06512"    
+    echo  "       AND tf > tfmin AND tf <= tfmax"    
+    echo " AND astro = SIGN(hastr)"    
+    echo "       AND surge = SIGN(hmean))"    
+    echo " WHERE (month(tastr) < 4 OR month(tastr) > 8)"    
+    echo " AND sigma > 0"
+    echo "GROUP BY tfmin, astro, surge;"
+    echo "update waqua_work.corr_"${yy}"_temp_06512" 
+    echo "set code = '06512';"
+    echo "update waqua_work.corr_"${yy}"_temp_06512" 
+    echo "set a0 = 0;"   
+    #echo "SELECT * from waqua_work.corr_$yy UNION SELECT * FROM waqua_work.corr_"${yy}"_temp_06512;"
+      
+
+
+
+
+    echo "DROP TABLE IF EXISTS waqua_work.corr_"${yy}"_temp_06514;"    
+    echo "CREATE TABLE waqua_work.corr_"${yy}"_temp_06514"
+    echo "(   code SMALLINT(5) ZEROFILL NOT NULL DEFAULT 00000,"
+    echo "    astro SMALLINT(2),"
+    echo "    surge SMALLINT(2),"
+    echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT 0,"
+    echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
+    echo "    a0 FLOAT NOT NULL DEFAULT 0,"
+    echo "    a1 FLOAT NOT NULL DEFAULT 0,"
+    #echo "    Bias FLOAT NOT NULL DEFAULT 0,"
+    echo "    mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);"  
+    echo "INSERT INTO waqua_work.corr_"${yy}"_temp_06514  (astro, surge, tfmin, tfmax, a0, a1)"
+    #printf "SELECT %4d, tfmin, tfmax, astro, surge, round(avg((hmean - hobs) / sigma), 2),\n" $yy
+    echo "SELECT astro, surge, tfmin, tfmax,"
+    echo "((sum(sigma) * sum(sigma * (hmean-hobs))) - (sum(hmean-hobs) * sum(power(sigma, 2))))/ (power(sum(sigma), 2) - (count(1) * sum(power(sigma, 2)))) AS a0," 
+    #echo "((sum(sigma) * sum(hmean-hobs)) - (count(1) * sum(sigma *(hmean-hobs)))) / (power(sum(sigma), 2) - count(1) * sum(power(sigma, 2))) AS a1"
+    #echo "round(stddev_pop((hmean - hobs) / sigma), 2) as a1"
+    echo "round(avg((hmean - hobs) / sigma), 3) as a1"
+    echo  "FROM eps06514_"${yy}""
+    echo "       JOIN corr"
+    echo   "        ON (code = 06514"    
+    echo  "       AND tf > tfmin AND tf <= tfmax"    
+    echo " AND astro = SIGN(hastr)"    
+    echo "       AND surge = SIGN(hmean))"    
+    echo " WHERE (month(tastr) < 4 OR month(tastr) > 8)"    
+    echo " AND sigma > 0"
+    echo "GROUP BY tfmin, astro, surge;"
+    echo "update waqua_work.corr_"${yy}"_temp_06514" 
+    echo "set code = '06514';"
+    echo "update waqua_work.corr_"${yy}"_temp_06514" 
+    echo "set a0 = 0;"
+    #echo "SELECT * from waqua_work.corr_"${yy}"_temp_06514 UNION SELECT * FROM waqua_work.corr_$yy;"
+    
+
+
+    echo "DROP TABLE IF EXISTS waqua_work.corr_"${yy}"_temp_06515;"    
+    echo "CREATE TABLE waqua_work.corr_"${yy}"_temp_06515"
+    echo "(   code INT(5) ZEROFILL NOT NULL DEFAULT 00000,"
+    echo "    astro SMALLINT(2),"   
+    echo "    surge SMALLINT(2),"
+    echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT 0,"
+    echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
+    echo "    a0 FLOAT NOT NULL DEFAULT 0,"
+    echo "    a1 FLOAT NOT NULL DEFAULT 0,"
+    #echo " Bias FLOAT NOT NULL DEFAULT 0,"
+
+    echo "    mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);"  
+    echo "INSERT INTO waqua_work.corr_"${yy}"_temp_06515  (astro, surge, tfmin, tfmax, a0, a1)"
+    #printf "SELECT %4d, tfmin, tfmax, astro, surge, round(avg((hmean - hobs) / sigma), 2),\n" $yy
+    echo "SELECT astro, surge, tfmin, tfmax,"
+    echo "((sum(sigma) * sum(sigma * (hmean-hobs))) - (sum(hmean-hobs) * sum(power(sigma, 2))))/ (power(sum(sigma), 2) - (count(1) * sum(power(sigma, 2)))) AS a0," 
+    #echo "((sum(sigma) * sum(hmean-hobs)) - (count(1) * sum(sigma *(hmean-hobs)))) / (power(sum(sigma), 2) - count(1) * sum(power(sigma, 2))) AS a1"
+    #echo "round(stddev_pop((hmean - hobs) / sigma), 2) as a1"
+    echo  "round(avg((hmean - hobs) / sigma), 3) as a1"
+    echo  "FROM eps06515_"${yy}""
+    echo "       JOIN corr"
+    echo   "        ON (code = 06515"    
+    echo  "       AND tf > tfmin AND tf <= tfmax"    
+    echo " AND astro = SIGN(hastr)"    
+    echo "       AND surge = SIGN(hmean))"    
+    echo " WHERE (month(tastr) < 4 OR month(tastr) > 8)"    
+    echo " AND sigma > 0"
+    echo "GROUP BY tfmin, astro, surge;"
+    echo "update waqua_work.corr_"${yy}"_temp_06515" 
+    echo "set code = '06515';"
+    echo "update waqua_work.corr_"${yy}"_temp_06515" 
+    echo "set a0 = 0;"   
+    #echo "SELECT * from waqua_work.corr_"${yy}"_temp_06515 UNION SELECT * FROM waqua_work.corr_$yy;"
+   
+
+    echo "DROP TABLE IF EXISTS waqua_work.corr_"${yy}"_temp_06520;"
+    echo "CREATE TABLE waqua_work.corr_"${yy}"_temp_06520"
+    echo "(   code INT(5) ZEROFILL NOT NULL DEFAULT 00000,"
+    echo "    astro SMALLINT(2),"  
+    echo "    surge SMALLINT(2),"
+    echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT 0,"
+    echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
+    echo "    a0 FLOAT NOT NULL DEFAULT 0,"
+    echo "    a1 FLOAT NOT NULL DEFAULT 0,"
+    #echo "     Bias FLOAT NOT NULL DEFAULT 0,"
+
+    echo "    mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);"  
+    echo "INSERT INTO waqua_work.corr_"${yy}"_temp_06520  (astro, surge, tfmin, tfmax, a0, a1)"
+    #printf "SELECT %4d, tfmin, tfmax, astro, surge, round(avg((hmean - hobs) / sigma), 2),\n" $yy
+    echo "SELECT astro, surge, tfmin, tfmax,"
+    echo "((sum(sigma) * sum(sigma * (hmean-hobs))) - (sum(hmean-hobs) * sum(power(sigma, 2))))/ (power(sum(sigma), 2) - (count(1) * sum(power(sigma, 2)))) AS a0," 
+    #echo "((sum(sigma) * sum(hmean-hobs)) - (count(1) * sum(sigma *(hmean-hobs)))) / (power(sum(sigma), 2) - count(1) * sum(power(sigma, 2))) AS a1"
+    #echo "round(stddev_pop((hmean - hobs) / sigma), 2) as a1"
+    echo "  round(avg((hmean - hobs) / sigma), 3) as a1"
+
+
+    echo  "FROM eps06520_"${yy}""
+    echo "       JOIN corr"
+    echo   "        ON (code = 06520"    
+    echo  "       AND tf > tfmin AND tf <= tfmax"    
+    echo " AND astro = SIGN(hastr)"    
+    echo "       AND surge = SIGN(hmean))"    
+    echo " WHERE (month(tastr) < 4 OR month(tastr) > 8)"    
+    echo " AND sigma > 0"
+    echo "GROUP BY tfmin, astro, surge;"
+    echo "update waqua_work.corr_"${yy}"_temp_06520" 
+    echo "set code = '06520';"
+    echo "update waqua_work.corr_"${yy}"_temp_06520" 
+    echo "set a0 = 0;"   
+    #echo "SELECT * from waqua_work.corr_"${yy}"_temp_06520 UNION SELECT * FROM waqua_work.corr_$yy;"
+    echo "DROP TABLE IF EXISTS waqua_work.corr_"$yy";"
+    
+
+    echo "CREATE TABLE waqua_work.corr_"$yy"" 
+    echo "(   code INT(5) ZEROFILL NOT NULL DEFAULT 00000,"
+    #echo "(code VARCHAR(4),"
+    echo "    astro SMALLINT(2),"  
+    echo "    surge SMALLINT(2),"
+    echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT 0,"
+    echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
+    echo "    a0 FLOAT NOT NULL DEFAULT 0,"
+    echo "    a1 FLOAT NOT NULL DEFAULT 0,"
+    #echo "     Bias FLOAT NOT NULL DEFAULT 0,"
+    echo "    mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)"
+    echo "SELECT * FROM waqua_work.corr_"${yy}"_temp_06511 UNION SELECT * FROM waqua_work.corr_"${yy}"_temp_06512 UNION SELECT * FROM waqua_work.corr_"${yy}"_temp_06514 UNION SELECT * FROM waqua_work.corr_"${yy}"_temp_06515 UNION SELECT * FROM waqua_work.corr_"${yy}"_temp_06520;" 
   done
-) \
-  | mysql --defaults-file=$HOME/.mysql/$myCnf -Ns $db
+  )\
+   | mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf -Ns $db
+

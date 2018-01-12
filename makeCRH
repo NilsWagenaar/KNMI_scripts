@@ -11,7 +11,7 @@
 #else
   #alias Mysql="mysql --defaults"
 #fi
-alias Mysql="mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf"
+#alias Mysql="mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf"
 
 while [ $# -gt 0 ]; do
 # echo "$1" >&2
@@ -33,14 +33,14 @@ genCRH ()
 (
   if [ ${6:-yes} == "no" ]; then
     rank=rank
-    crh=crh$1
+    crh=crh$1_2016
   else
     rank=rank1
-    crh=crhcal$1_0912
+    crh=crhcal$1_2016
   fi
   echo "DROP TABLE IF EXISTS hist;"
   echo "CREATE TABLE hist"
-  echo "SELECT $rank AS rank, COUNT(*) AS N FROM eps$1_0912"
+  echo "SELECT $rank AS rank, COUNT(*) AS N FROM eps$1_2016"
   echo "WHERE $rank IS NOT NULL"
   echo "AND tf   >  $2"
   echo "AND tf   <= $3"
@@ -74,7 +74,7 @@ genCRH ()
     fi
   done
   echo "CREATE TABLE IF NOT EXISTS $crh"
-  echo "    tfmin DOUBLE(19,2) NOT NULL DEFAULT   0,"
+  echo "    (tfmin DOUBLE(19,2) NOT NULL DEFAULT 0,"
   echo "    tfmax DOUBLE(19,2) NOT NULL DEFAULT 240,"
   echo "    astro ENUM ('high', 'low'),"
   echo "    rank  TINYINT(4)   NOT NULL DEFAULT -1,"
@@ -92,7 +92,7 @@ genCRH ()
   echo "    GROUP BY t1.rank;"
   echo "DROP TABLE IF EXISTS hist;"
 ) \
-  | Mysql $outopt $db \
+  | mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf $outopt $db \
   > /dev/null \
   || exit $?
 }
@@ -107,13 +107,13 @@ genCRH ()
 set -A tfs 0:48 48:84 84:120 120:156 156:192 192:240
 
 set -x 
-for gauge in $(echo "SHOW TABLES" | Mysql $outopt $db | grep eps \
+for gauge in $(echo "SHOW TABLES" | mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf $outopt $db | grep eps \
                 | sed -e 's/^eps//' -e 's/_.*//' | sort | uniq); do
 # for corr in "no" "yes"; do
     if [ $corr == "no" ]; then
-      echo "DROP TABLE IF EXISTS crh$gauge" | Mysql $outopt $db
+      echo "DROP TABLE IF EXISTS crh$gauge" | mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf $outopt $db
     else
-      echo "DROP TABLE IF EXISTS crhcal$gauge" | Mysql $outopt $db
+      echo "DROP TABLE IF EXISTS crhcal$gauge" | mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf $outopt $db
     fi
     for tf in ${tfs[*]}; do
       for astro in -1 1; do

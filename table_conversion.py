@@ -26,7 +26,7 @@ def f_IL_PW(row):
     return val
 
 def Brier_calc_years(file):            
-    data = pd.read_csv(file, sep = "\t|,")
+    data = pd.read_csv(file, sep = "\t")
     print data
     
     if (data.iloc[0]['lvl'] >= 0 & data.iloc[0]['lvl'] <= 100):
@@ -46,7 +46,7 @@ def Brier_calc_years(file):
     data.to_csv(file, sep = ",")     
 
 
-main_folder =  glob.glob("/usr/people/wagenaa/evaluation_ENS_1516/06512/" + "/*/")
+main_folder =  glob.glob("/usr/people/wagenaa/Cal_ENS_0912/06515/" + "/*/")
 print main_folder
 for i in main_folder:
     print i

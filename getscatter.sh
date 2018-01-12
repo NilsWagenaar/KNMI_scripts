@@ -33,18 +33,18 @@ for station in "${stations[@]}"; do
   #if [ ! -d /usr/people/wagenaa/CRPS_members/13-16/$station/$1-$2 ]; then
     #mkdir -p /usr/people/wagenaa/CRPS_members/13-16/$station/$1-$2
   #fi
-  echo "select dtg, tastr, hastr, hmean, sigma, hobs from eps"$station"_"$3" where HOUR(timediff(tastr, dtg))>$1 AND HOUR(timediff(tastr, dtg))<$2 AND hastr >0 AND hobs IS NOT NULL" |mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf> /usr/people/wagenaa/scatterEPS_HT/$3/$station/$1-$2/EPS_"$station"_$1-$2_.txt 
+  echo "select dtg, tastr, hastr, hmean, sigma, hobs from eps"$station"_"$3" where HOUR(timediff(tastr, dtg))>$1 AND HOUR(timediff(tastr, dtg))<$2 AND hobs IS NOT NULL" |mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf> /usr/people/wagenaa/scatterEPS/$3/$station/$1-$2/EPS_"$station"_$1-$2_.txt 
 done
 )\
 }
 
 
-for year in "${years[@]}"; do 
-  for tf in ${tfs[*]};do
-    echo $tf
-    query $(echo $tf | sed -e 's/:/ /') $year
-  done
-done
+#for year in "${years[@]}"; do 
+  #for tf in ${tfs[*]};do
+    #echo $tf
+    #query $(echo $tf | sed -e 's/:/ /') $year
+  #done
+#done
 
 query ()
 {
@@ -58,8 +58,8 @@ for station in "${stations[@]}"; do
   echo $1
   echo $2
   echo $3
-  if [ ! -d /usr/people/wagenaa/scatterEPS_years_LT/$station/$1-$2 ]; then
-    mkdir -p /usr/people/wagenaa/scatterEPS_years_LT/$station/$1-$2
+  if [ ! -d /usr/people/wagenaa/scatterEPS_years_LT_PS/$station/$1-$2 ]; then
+    mkdir -p /usr/people/wagenaa/scatterEPS_years_LT_PS/$station/$1-$2
   fi
   #if [ ! -d /usr/people/wagenaa/CRPS_members/13-16/$station ]; then
     #mkdir -p /usr/people/wagenaa/CRPS_members/13-16/$station 
@@ -67,22 +67,22 @@ for station in "${stations[@]}"; do
 
   #echo excLev"$station"_2008
   
-  if [ ! -d /usr/people/wagenaa/scatterEPS_years_LT/$station/$1-$2/$3 ]; then
-    mkdir -p /usr/people/wagenaa/scatterEPS_years_LT/$station/$1-$2/$3
+  if [ ! -d /usr/people/wagenaa/scatterEPS_years_LT_PS/$station/$1-$2/$3 ]; then
+    mkdir -p /usr/people/wagenaa/scatterEPS_years_LT_PS/$station/$1-$2/$3
   fi
   #if [ ! -d /usr/people/wagenaa/CRPS_members/13-16/$station/$1-$2 ]; then
     #mkdir -p /usr/people/wagenaa/CRPS_members/13-16/$station/$1-$2
   #fi
-  echo "select dtg, tastr, hastr, hmean, sigma, hobs from eps"$station"_"$3" where HOUR(timediff(tastr, dtg))>$1 AND HOUR(timediff(tastr, dtg))<$2 AND hastr <0 AND hobs IS NOT NULL" |mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf> /usr/people/wagenaa/scatterEPS_years_LT/$station/$1-$2/$3/EPS_"$station"_$1-$2_.txt
+  echo "select dtg, tastr, hastr, hmean, sigma, hobs from eps"$station"_"$3" where HOUR(timediff(tastr, dtg))>$1 AND HOUR(timediff(tastr, dtg))<$2 AND hastr <0 AND hmean >0 AND hobs IS NOT NULL" |mysql --defaults-file=/usr/people/wagenaa/.mysql/ontwrd.cnf> /usr/people/wagenaa/scatterEPS_years_LT_PS/$station/$1-$2/$3/EPS_"$station"_$1-$2_.txt
 done
 )\
 }
 
 
-#for year in "${years[@]}"; do 
-  #for tf in ${tfs[*]};do
-    #echo $tf
-    #query $(echo $tf | sed -e 's/:/ /') $year
-  #done
-#done
+for year in "${years[@]}"; do 
+  for tf in ${tfs[*]};do
+    echo $tf
+    query $(echo $tf | sed -e 's/:/ /') $year
+  done
+done
 

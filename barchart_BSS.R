@@ -1,15 +1,21 @@
 require("ggplot2")
 require("gridExtra")
 require("grid")
-#Mediumsurge Vlissingen
 
-#leadtimes = c("0-48", "0-48", "48-84", "48-84", "84-120", "84-120", "120-168", "120-168", "168-240", "168-240")
-leadtimes = c("0-48", "0-48", "0-48", "48-84", "48-84", "48-84","84-120", "84-120", "84-120", "120-168", "120-168", "120-168", "168-240", "168-240", "168-240")
+
+#make string arrays 
+
+leadtimes = c("0-48", "0-48", "48-84", "48-84","84-120", "84-120", "120-168", "120-168", "168-240", "168-240")
 #years = c("2008-2012", "2013-2016", "2008-2012", "2013-2016", "2008-2012", "2013-2016", "2008-2012", "2013-2016", "2008-2012", "2013-2016")
 #tides = c("Lowtide", "Hightide", "Lowtide", "Hightide", "Lowtide", "Hightide", "Lowtide", "Hightide", "Lowtide", "Hightide")
 #seasons = c("Summer", "Winter", "Summer", "Winter", "Summer", "Winter", "Summer", "Winter", "Summer", "Winter")
 #calibration = c("2003/04", "2015/16", "2003/04", "2015/16", "2003/04", "2015/16", "2003/04", "2015/16", "2003/04", "2015/16")
-calibration = c("2003/04", "2013/14", "2015/16", "2003/04", "2013/14", "2015/16", "2003/04", "2013/14", "2015/16", "2003/04", "2013/14", "2015/16", "2003/04", "2013/14", "2015/16")
+calibration = c("Cal 2006/07", "Cal 2008/12 + Bias corr", "Cal 2006/07", "Cal 2008/12 + Bias corr", "Cal 2006/07", "Cal 2008/12 + Bias corr", "Cal 2006/07", "Cal 2008/12 + Bias corr", "Cal 2006/07", "Cal 2008/12 + Bias corr")
+
+
+
+##################################Brier Skill Scores for several locations##############################
+
 
 
 #Vlissingen
@@ -46,7 +52,9 @@ calibration = c("2003/04", "2013/14", "2015/16", "2003/04", "2013/14", "2015/16"
 #BSS_PW = c(0.51, 0.47, 0.40, 0.35, 0.20, 0.11, -0.048, 0.034, -0.027, 0.0094)
 
 
-##################tides#################3
+##################tides#################
+
+
 #HVH
 
 #BSS_MS = c(0.48, 0.54, 0.29, 0.38, 0.15, 0.18, 0.036, -0.022, 0.0041, 0.018)
@@ -112,10 +120,10 @@ calibration = c("2003/04", "2013/14", "2015/16", "2003/04", "2013/14", "2015/16"
 
 #Delfzijl
 
-BSS_MS = c(0.58, 0.38, 0.33, 0.61, 0.46, 0.42, 0.53, 0.45, 0.42, 0.38, 0.38, 0.38, 0.11, 0.046, 0.0076)
-BSS_NS = c(-1.0, -1.0, -1.0, 0.21, -1.0, -1.0, 0.19, -0.66, -1.0, 0.0083, 0.075, 0.073, -0.21, -0.19, -0.076)
-BSS_IL = c(0.66, 0.45, 0.42, 0.69, 0.52, 0.49, 0.53, 0.40, 0.39, 0.34, 0.32, 0.31, 0.096, 0.043, 0.082)
-BSS_PW = c(0.65, 0.44, 0.41, 0.58, 0.42, 0.39, 0.43, 0.34, 0.32, 0.25, 0.22, 0.20, 0.1, 0.077, 0.091)
+#BSS_MS = c(0.58, 0.38, 0.33, 0.61, 0.46, 0.42, 0.53, 0.45, 0.42, 0.38, 0.38, 0.38, 0.11, 0.046, 0.0076)
+#BSS_NS = c(-1.0, -1.0, -1.0, 0.21, -1.0, -1.0, 0.19, -0.66, -1.0, 0.0083, 0.075, 0.073, -0.21, -0.19, -0.076)
+#BSS_IL = c(0.66, 0.45, 0.42, 0.69, 0.52, 0.49, 0.53, 0.40, 0.39, 0.34, 0.32, 0.31, 0.096, 0.043, 0.082)
+#BSS_PW = c(0.65, 0.44, 0.41, 0.58, 0.42, 0.39, 0.43, 0.34, 0.32, 0.25, 0.22, 0.20, 0.1, 0.077, 0.091)
 
 #Den Helder
 
@@ -148,15 +156,46 @@ BSS_PW = c(0.65, 0.44, 0.41, 0.58, 0.42, 0.39, 0.43, 0.34, 0.32, 0.25, 0.22, 0.2
 #BSS_IL = c(0.55, 0.39, 0.42, 0.40, 0.23, 0.36, 0.11, 0.20, 0.055, 0.078)
 #BSS_PW = c(0.53, 0.32, 0.46, 0.29, 0.24, 0.1, 0.16, 0.0073, 0.034, 0.02)
 
+###############################Validation cal0912 / cal0912 + Cor 1317############################################
+
+#HVH
+
+#BSS_MS = c(0.52, 0.50, 0.39, 0.40, 0.23, 0.25, 0.063, 0.11, 0.018, 0.067)
+#BSS_NS = c(-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -0.34, -1.0, -1.0, -0.38, 0.11, -0.22, -0.23, -0.32, -0.24)
+#BSS_IL = c(0.63, 0.65, 0.57, 0.58, 0.43, 0.45, 0.20, 0.26, 0.051, 0.13)
+#BSS_PW = c(0.48, 0.45, 0.45, 0.45, 0.28, 0.30, 0.15, 0.20, 0.086, 0.15)
+
+#Delfzijl
+
+#BSS_MS = c(0.58, 0.62, 0.57, 0.60, 0.44, 0.48, 0.24, 0.32, 0.032, 0.12)
+#BSS_NS = c(-1.0, -1.0, -1.0, 0.21, -1.0, -1.0, 0.19, -0.66, -1.0, 0.0083, 0.075, 0.073, -0.21, -0.19, -0.076)
+#BSS_IL = c(0.71, 0.68, 0.68, 0.65, 0.53, 0.54, 0.32, 0.36, 0.045, 0.14)
+#BSS_PW = c(0.62, 0.65, 0.55, 0.58, 0.45, 0.47, 0.34, 0.32, 0.11, 0.13)
+
+#Den Helder
+
+BSS_MS = c(0.70, 0.70, 0.61, 0.62, 0.44, 0.47, 0.17, 0.22, 0.0013, 0.075)
+#BSS_NS = c(-1.0, -1.0, -1.0, -0.20, -1.0, -1.0 ,0.06, -1.0, -1.0, -0.095, -0.21, -0.42, -0.090, -0.21, -0.1)
+BSS_IL = c(0.60, 0.59, 0.54, 0.56, 0.38, 0.46, 0.21, 0.28, -0.017, 0.10)
+BSS_PW = c(0.66, 0.62, 0.46, 0.43, 0.29, 0.26, 0.20, 0.18, -0.030, 0.058)
 
 
+###########################################################
 
+#make dataframe
 
 dataframe = data.frame(leadtimes = leadtimes, Calibration_Period = calibration)
+
+#assign BSS to dataframe
+
+
 dataframe$Brier_Skill_Score_MediumSurge = BSS_MS
-dataframe$Brier_Skill_Score_NegSurge = BSS_NS
+#dataframe$Brier_Skill_Score_NegSurge = BSS_NS
 dataframe$Brier_Skill_Score_IL = BSS_IL
 dataframe$Brier_Skill_Score_PW = BSS_PW
+
+
+# function for shared legend
 
 grid_arrange_shared_legend <- function(...) {
     plots <- list(...)
@@ -171,25 +210,28 @@ grid_arrange_shared_legend <- function(...) {
         heights = unit.c(unit(1, "npc") - lheight, lheight))
 }
 
-#dataframe$ordered_lead <- factor(dataframe$leadtimes, as.character(dataframe$leadtimes))
+
 dataframe$ordered_lead <- factor(dataframe$leadtimes, c("0-48", "48-84", "84-120", "120-168", "168-240"))
 print(dataframe)
 
+#plot
+ 
 p1 <-ggplot(dataframe, aes(x = ordered_lead, y = Brier_Skill_Score_MediumSurge, fill = Calibration_Period))
-p1 = p1 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("Medium surge") + xlab("leadtime [hr]") + ylab("Brier Skill Score")
+p1 = p1 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("Medium surge") + xlab("lead-time [h]") + ylab("Brier skill score")
 
-p2 <-ggplot(dataframe, aes(x = ordered_lead, y = Brier_Skill_Score_NegSurge, fill = Calibration_Period))
-p2 = p2 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("-50cm surge") + xlab("leadtime [hr]") + ylab("Brier Skill Score")
+#p2 <-ggplot(dataframe, aes(x = ordered_lead, y = Brier_Skill_Score_NegSurge, fill = Calibration_Period))
+#p2 = p2 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("-50cm surge") + xlab("leadtime [hr]") + ylab("Brier Skill Score")
 
 
 p3 <-ggplot(dataframe, aes(x = ordered_lead, y = Brier_Skill_Score_IL, fill = Calibration_Period))
-p3 = p3 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("Information level") + xlab("leadtime [hr]") + ylab("Brier Skill Score")
+p3 = p3 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("Information level") + xlab("lead-time [h]") + ylab("Brier skill score")
 
 p4 <-ggplot(dataframe, aes(x = ordered_lead, y = Brier_Skill_Score_PW, fill = Calibration_Period))
-p4 = p4 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("Pre-warning level") + xlab("leadtime [hr]") + ylab("Brier Skill Score")
+p4 = p4 +geom_bar(stat = "identity", position = "dodge") + ylim(-1.0, 1.0) + ggtitle("Pre-warning level") + xlab("lead-time [h]") + ylab("Brier skill score")
 
-pdf("/usr/people/wagenaa/Delfzijl/BSS_plots_calibration1516.pdf", onefile = FALSE)
+#make pdf
+pdf("/usr/people/wagenaa/Den_Helder/BSS_plots_DH_calibration0912_corr.pdf", onefile = FALSE)
 
-grid_arrange_shared_legend(p1, p2, p3, p4)
-#grid.arrange(p1, p2, p3, p4, ncol = 2)
+grid_arrange_shared_legend(p1, p3, p4)
+
 

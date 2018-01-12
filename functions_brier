@@ -1,24 +1,35 @@
 #!/usr/bin/ksh
 
+#define station and lead-time arrays
+
 set -A stations 06511 06512 06514 06515 06520
 #set -A years 2008 2009 2010 2011 2012 2013 2014 2015 2016
 set -A tfs 0:48 48:84 84:120 120:168 168:240 120:240
 #set -A tfs 0:12 12:24 24:48 48:84 84:120 120:168 168:240
 #set -A tfs 120:240
+
+#function for MYSQL queries
+
 query ()
 {
 (
 for station in "${stations[@]}"; do
   
-  #set -A lvls -- -50 75 180 200 
-  set -A lvls -- -50 75
-  if [ ! -d /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station ]; then
-    mkdir -p /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station 
-  fi
-  if [ ! -d /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station ]; then
-    mkdir -p /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station 
-  fi
+   
+  #make initial lvls array
 
+  set -A lvls -- -50 75
+  
+  #make directories 
+  if [ ! -d /usr/people/wagenaa/evaluation_ENS_1317/$station ]; then
+    mkdir -p /usr/people/wagenaa/evaluation_ENS_1317/$station 
+  fi
+  if [ ! -d /usr/people/wagenaa/evaluation_ENS_1317/$station ]; then
+    mkdir -p /usr/people/wagenaa/evaluation_ENS_1317/$station 
+  fi
+  
+  #Change surge and  absolute water level related to station
+ 
   if [[ "$station" = "06511" || "$station" = "06512" ]]; then 
     med_surge=80
     lvls[1]=$med_surge
@@ -59,9 +70,10 @@ for station in "${stations[@]}"; do
   fi
   echo "${lvls[@]}"
   echo excLev"$station"_2008
+  #loop through the levels array 
   for lvl in "${lvls[@]}";do
-    if [ ! -d /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station/$1-$2 ]; then
-      mkdir -p /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station/$1-$2
+    if [ ! -d /usr/people/wagenaa/evaluation_ENS_1317/$station/$1-$2 ]; then
+      mkdir -p /usr/people/wagenaa/evaluation_ENS_1317/$station/$1-$2
     fi
     #if [ ! -d /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station/$1-$2 ]; then
      # mkdir -p /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station/$1-$2
@@ -69,8 +81,12 @@ for station in "${stations[@]}"; do
     echo $lvl 
     echo $1
     echo $2
+    
+    #############################MYSQL QUERY to generate files used in Brier.py#######################################
+
+    
     #echo "SELECT * from excLev"$station"_2008_new_1314 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2009_new_1314 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT *  from excLev"$station"_2010_new_1314 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2011_new_1314 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT *  from excLev"$station"_2012_new_1314 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL" | mysql --defaults-file= ~/.mysql/ontwrd.cnf> /usr/people/wagenaa/calibration_ENS_1314/08-12/$station/$1-$2/sum_"$station"_"$1"-"$2"_$lvl.txt 
-    echo "SELECT * from excLev"$station"_2013_cal0912_cor1317 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2014_cal0912_cor1317 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2015_cal0912_cor1317 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2016_cal0912_cor1317 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2017_cal0912_cor1317 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL" | mysql --defaults-file=~/.mysql/ontwrd.cnf> /usr/people/wagenaa/Cal_ENS_0912_cor1317/$station/$1-$2/sum_"$station"_"$1"-"$2"_$lvl.txt 
+    echo "SELECT * from excLev"$station"_2013 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2014 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2015 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2016 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2017 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL" | mysql --defaults-file=~/.mysql/ontwrd.cnf> /usr/people/wagenaa/evaluation_ENS_1317/$station/$1-$2/sum_"$station"_"$1"-"$2"_$lvl.txt 
     #echo "SELECT * from excLev"$station"_2008 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT * from excLev"$station"_2009 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2010 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2011 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2012 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2013 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2014 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2015 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0 UNION SELECT *  from excLev"$station"_2016 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr<0" | mysql --defaults-file=.mysql/ontwrd.cnf> /usr/people/wagenaa/test/lowtide/$station/$1-$2/sum_"$station"_"$1"-"$2"_$lvl.txt  
     #echo "SELECT * from excLev"$station"_2008 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hastr>0 AND hobs IS NOT NULL UNION SELECT * from excLev"$station"_2009 WHERE tf> $1 AND tf <$2  AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0 UNION SELECT *  from excLev"$station"_2010 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0 UNION  SELECT * from excLev"$station"_2011 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0 UNION SELECT *  from excLev"$station"_2012 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0 UNION SELECT *  from excLev"$station"_2013 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0 UNION SELECT *  from excLev"$station"_2014 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0 UNION SELECT *  from excLev"$station"_2015 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0 UNION SELECT *  from excLev"$station"_2016 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND hastr>0" |mysql --defaults-file=.mysql/ontwrd.cnf> /usr/people/wagenaa/test/hightide/$station/$1-$2/sum_"$station"_"$1"-"$2"_$lvl.txt
     #echo  "SELECT * from excLev"$station"_2009 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2009-01-01 12:00:00' AND '2009-03-24 12:00:00' UNION SELECT * from excLev"$station"_2010 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2010-01-01 12:00:00' AND '2010-03-24 12:00:00' UNION SELECT * from excLev"$station"_2011 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2011-01-01 12:00:00' AND '2011-03-24 12:00:00' UNION SELECT * from excLev"$station"_2012 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2012-01-01 12:00:00' AND '2012-03-24 12:00:00' UNION SELECT * from excLev"$station"_2013 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2013-01-01 12:00:00' AND '2013-03-24 12:00:00' UNION SELECT * from excLev"$station"_2014 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2014-01-01 12:00:00' AND '2014-03-24 12:00:00' UNION SELECT * from excLev"$station"_2015 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2015-01-01 12:00:00' AND '2015-03-24 12:00:00' UNION SELECT * from excLev"$station"_2016 WHERE tf> $1 AND tf <$2 AND lvl = $lvl AND hobs IS NOT NULL AND dtg between '2016-01-01 12:00:00' AND '2016-03-24 12:00:00'" |mysql --defaults-file=.mysql/ontwrd.cnf> /usr/people/wagenaa/test/winter/$station/$1-$2/sum_"$station"_"$1"-"$2"_$lvl.txt
@@ -81,6 +97,11 @@ for station in "${stations[@]}"; do
 done
 )\
 }
+
+
+####main####
+#loop through lead-times array and have and obtain tfmin and tfmax
+
 
 for tf in ${tfs[*]};do
   echo $tf

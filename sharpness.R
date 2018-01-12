@@ -3,7 +3,7 @@ require("ggplot2")
 require("gridExtra")
 require(DataCombine)
 
-
+#input files generated from another script
 
 input_file3 = "/usr/people/wagenaa/Vlissingen/Information_level/0-48hr/0809101112_48hr_Vliss_IL.csv"
 input_file4 = "/usr/people/wagenaa/Vlissingen/Information_level/0-48hr/13141516_48hr_Vliss_IL.csv"
@@ -16,6 +16,7 @@ input_file8 = "/usr/people/wagenaa/Vlissingen/Information_level/120-240hr/131415
 
 
 #load csv data files
+
 MyData3 <- read.csv(file=input_file3, header=TRUE, sep=",")
 Events_obs3 = MyData3[ ,"event_obs"]
 #print(Events_obs)
@@ -35,8 +36,13 @@ Predictions = MyData1[ ,"Pexc_brier"]
 MyData2 <- read.csv(file=input_file2, header=TRUE, sep=",")
 Event_obs2 = MyData2[ , "event_obs"]
 Predictions2 = MyData2[ , "Pexc_brier"]
+
+# statistics
+
 verification = verify(Events_obs, Predictions)
 verification2 = verify(Event_obs2, Predictions2)
+
+##################################
 
 MyData5 <- read.csv(file=input_file5, header=TRUE, sep=",")
 Events_obs5 = MyData5[ ,"event_obs"]
@@ -51,24 +57,42 @@ Predictions6 = MyData6[ , "Pexc_brier"]
 verification5 = verify(Events_obs5, Predictions5)
 verification6 = verify(Event_obs6, Predictions6)
 
+###################################################
+
+#obtain thresholds
+
 thresholds3= verification3$thres
 id3 <- is.finite(Events_obs3) & is.finite(Predictions3)
 obs3 <- Events_obs3[id3]
 pred3 <- Predictions3[id3]
 pred3 <- round(pred3, 8)
 thresholds3<- round(thresholds3, 8 )
+
+# bin probabilities
+
 XX3<- probcont2disc(pred3, bins = thresholds3)
 pred3 <- XX3$new
 new.mids3<- XX3$mids
+
+#obtain amount of predicitions and corresponding observations
+
 N.pred3 <- aggregate(pred3, by = list(pred3), length)
 N.obs3 <- aggregate(obs3, by = list(pred3), sum)
+
+# generate an empty dataframe
 XX3<- data.frame(Group.1 = new.mids3, zz = rep(0, length(thresholds3) -
             1))
 XX3$Group.1 <- as.factor(XX3$Group.1)
 N.pred3$Group.1 <- as.factor(N.pred3$Group.1)
 N.obs3$Group.1 <- as.factor(N.obs3$Group.1)
+
+# merge  N.pred and N.obs with empty dataframes
+
 N.pred3 <- merge(XX3, N.pred3, all.x = TRUE)
 N.obs3 <- merge(XX3, N.obs3, all.x = TRUE)
+
+# repetition for other forecast period
+
 thresholds4=verification4$thres
 id4<- is.finite(Event_obs4) & is.finite(Predictions4)
 obs4<- Event_obs4[id4]
@@ -82,9 +106,13 @@ N.pred4 <- aggregate(pred4, by = list(pred4), length)
 N.obs4 <- aggregate(obs4, by = list(pred4), sum)
 XX4<- data.frame(Group.1 = new.mids4, zz = rep(0, length(thresholds4) -
 1))
-#print(N.pred4)
+
+# make forecast period vectors
+
 years = c(rep("2008-2012", 10))
 years2 = c(rep("2013-2016", 10))
+
+# trick to remove the period "string" whenever length N.pred dataframe is unequal to years vector 
 if(length(years) != length(N.pred3[[1]])){
 N = (abs((length(years) - length(N.pred3[[1]]))))
 if (N>0){
@@ -94,6 +122,7 @@ years = years[-1]
 n = n+1
 }
 }
+#put the vector in the dataframe
 N.pred3$years = years
 } else{
 N.pred3$years = years
@@ -114,17 +143,29 @@ N.pred4$years = years2
 N.pred4$years = years2
 }
 
+#convert to log
+
 N.pred3[, 3] = log(N.pred3[, 3], base = 10)
 N.pred4[, 2] = log(N.pred4[, 2], base = 10)
-#print (N.pred4)
+
+# merge the dataframes
+
 Dataframe1 <- merge(N.pred3, N.pred4, all = TRUE)
-#cat "this is with NA"
-#print (Dataframe1)
+
+#remove the missing values
+
 Dataframe1[is.na(Dataframe1)] = 0
-#cat "this is without NA"
+
 print (Dataframe1)
+
+#plot the dataframe
+
 p1 <-ggplot(Dataframe1, aes(x = Group.1, y = x, fill = years))
 p1 = p1 + geom_bar(stat = "identity", position = "dodge") + ggtitle("0-48hr") + theme(plot.title = element_text(size=16, face="bold.italic"))+theme(legend.text = element_text(size=10)) + xlab("probability forecast bins") + ylab("log # forecasts")
+
+
+# repetitition
+
 
 thresholds1= verification$thres
 id1 <- is.finite(Events_obs) & is.finite(Predictions)

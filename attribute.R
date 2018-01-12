@@ -23,20 +23,17 @@ Predictions4 = MyData4[ , "Pexc_brier"]
 #do statistics
 verification3 = verify(Events_obs3, Predictions3, baseline =0.0022)
 verification4 = verify(Event_obs4, Predictions4, baseline=0.0022)
-#cat("lowtide mediumsurge is")
 
-#cat("winter brier score for medium surge is")
-
+#print some results
 print(verification3)
 print(verification4)
-#cat("hightide mediumsurge is")
-#cat("summer brier score for medium surge is")
 
 #print(verification4$bs)
+
+
 #make plot
 pdf("/usr/people/wagenaa/Hoek_van_Holland/Attribute_diagrams/1314calibration_HVH_PW.pdf", onefile=FALSE)
 par(mfrow = c(2,2))
-#par(mfrow = c(1,2))
 
 figure3 = attribute(verification3, main = "0-48hr", CI = TRUE, freq = FALSE)
 

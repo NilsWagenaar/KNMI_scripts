@@ -27,23 +27,23 @@ require("ROCR")
 #input_file8 = "/usr/people/wagenaa/test2/winter/06512/120-240/sum_06512_120-240_80.txt"
 
 
-input_file1 = "/usr/people/wagenaa/evaluation_ENS_1516/06512/0-48/sum_06512_0-48_170.txt"
-input_file2 = "/usr/people/wagenaa/calibration_ENS_1314_new/06512/0-48/sum_06512_0-48_170.txt"
-input_file3 = "/usr/people/wagenaa/calibration_ENS_1516/06512/0-48/sum_06512_0-48_170.txt"
-input_file4 = "/usr/people/wagenaa/evaluation_ENS_1516/06512/48-84/sum_06512_48-84_170.txt"
-input_file5 = "/usr/people/wagenaa/calibration_ENS_1314_new/06512/48-84/sum_06512_48-84_170.txt"
-input_file6 = "/usr/people/wagenaa/calibration_ENS_1516/06512/48-84/sum_06512_48-84_170.txt"
-input_file7 = "/usr/people/wagenaa/evaluation_ENS_1516/06512/84-120/sum_06512_84-120_170.txt"
-input_file8 = "/usr/people/wagenaa/calibration_ENS_1314_new/06512/84-120/sum_06512_84-120_170.txt"
-input_file9 = "/usr/people/wagenaa/calibration_ENS_1516/06512/84-120/sum_06512_84-120_170.txt"
-input_file10 = "/usr/people/wagenaa/evaluation_ENS_1516/06512/120-240/sum_06512_120-240_170.txt"
-input_file11 = "/usr/people/wagenaa/calibration_ENS_1314_new/06512/120-240/sum_06512_120-240_170.txt"
-input_file12 = "/usr/people/wagenaa/calibration_ENS_1516/06512/120-240/sum_06512_120-240_170.txt"
+input_file1 = "/usr/people/wagenaa/evaluation_ENS_1317/06514/0-48/sum_06514_0-48_200.txt"
+input_file2 = "/usr/people/wagenaa/Cal_ENS_0912/06514/0-48/sum_06514_0-48_200.txt"
+input_file3 = "/usr/people/wagenaa/Cal_ENS_0912_cor1317/06514/0-48/sum_06514_0-48_200.txt"
+input_file4 = "/usr/people/wagenaa/evaluation_ENS_1317/06514/48-84/sum_06514_48-84_200.txt"
+input_file5 = "/usr/people/wagenaa/Cal_ENS_0912/06514/48-84/sum_06514_48-84_200.txt"
+input_file6 = "/usr/people/wagenaa/Cal_ENS_0912_cor1317/06514/48-84/sum_06514_48-84_200.txt"
+input_file7 = "/usr/people/wagenaa/evaluation_ENS_1317/06514/84-120/sum_06514_84-120_200.txt"
+input_file8 = "/usr/people/wagenaa/Cal_ENS_0912/06514/84-120/sum_06514_84-120_200.txt"
+input_file9 = "/usr/people/wagenaa/Cal_ENS_0912_cor1317/06514/84-120/sum_06514_84-120_200.txt"
+input_file10 = "/usr/people/wagenaa/evaluation_ENS_1317/06514/120-240/sum_06514_120-240_200.txt"
+input_file11 = "/usr/people/wagenaa/Cal_ENS_0912/06514/120-240/sum_06514_120-240_200.txt"
+input_file12 = "/usr/people/wagenaa/Cal_ENS_0912_cor1317/06514/120-240/sum_06514_120-240_200.txt"
 
 
 
 
-output_file = "/usr/people/wagenaa/Den_Helder/ROC_diagrams/ROC_DFZ__Validation_PW"
+output_file = "/usr/people/wagenaa/Hoek_van_Holland/ROC_diagrams/ROC_HVH__Validation_MS"
 
 #load csv data files
 MyData1 <- read.csv(input_file1, header=TRUE, sep=",")
